@@ -7,6 +7,6 @@ include("strategies.jl")
 include("simulation.jl")
 
 export step!, prepare!, life_rule!
-export Serial, ThreadParallel
+export Serial, ThreadParallel, ProcParallel
 
 end

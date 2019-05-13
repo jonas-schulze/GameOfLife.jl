@@ -1,10 +1,18 @@
 using Test, GameOfLife
+using SharedArrays
 
 interior(grid) = @view grid[2:end-1,2:end-1]
 
-function generate(world)
+function generate(world, s=Serial())
     m, n = size(world)
     grid = BitArray(undef, m+2, n+2)
+    interior(grid) .= world
+    grid
+end
+
+function generate(world, ::ProcParallel)
+    m, n = size(world)
+    grid = SharedArray{Bool,2}(m+2, n+2)
     interior(grid) .= world
     grid
 end
@@ -32,10 +40,11 @@ m, n = size(world0)
 end
 
 @testset "distribution strategies" begin
-    @testset "$S" for S in [Serial, ThreadParallel]
-        old = generate(world0)
+    @testset "$S" for S in [Serial, ThreadParallel, ProcParallel]
+        s = S()
+        old = generate(world0, s)
         new = similar(old)
-        step!(new, old, S())
+        step!(new, old, s)
         @test interior(old) == world0
         @test interior(new) == world1
     end
