@@ -7,3 +7,4 @@ abstract type DistributionStrategy end
 const TILESIZE = 32
 
 include("strategies/serial.jl")
+include("strategies/threads.jl")

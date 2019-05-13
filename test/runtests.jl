@@ -32,7 +32,7 @@ m, n = size(world0)
 end
 
 @testset "distribution strategies" begin
-    @testset "$S" for S in [Serial]
+    @testset "$S" for S in [Serial, ThreadParallel]
         old = generate(world0)
         new = similar(old)
         step!(new, old, S())
