@@ -1,6 +1,8 @@
 using Test, GameOfLife
 using SharedArrays
 
+include("halomatrix.jl")
+
 interior(grid) = @view grid[2:end-1,2:end-1]
 
 function generate(world, s=Serial())

@@ -3,6 +3,7 @@ Toy program to demonstrate/practice parallel programming techniques.
 """
 module GameOfLife
 
+include("halomatrix.jl")
 include("strategies.jl")
 include("simulation.jl")
 
