@@ -24,9 +24,8 @@ world1 = [1 0 1 0 1 0 1;
           1 0 1 1 0 0 1;
           1 0 1 0 1 0 1]
 
-m, n = size(world0)
-
 @testset "general simulation tools" begin
+    m, n = size(world0)
     g0 = generate(world0)
     prepare!(g0)
     @test g0 == [1 0 0 0 0 1 0 1 0;
@@ -47,5 +46,27 @@ end
         step!(new, old, s)
         @test interior(old) == world0
         @test interior(new) == world1
+    end
+end
+
+function randomize!(x)
+    for i in eachindex(x)
+        x[i] = rand(eltype(x))
+    end
+end
+
+@testset "slightly bigger dataset" begin
+    n = 1_000
+    g = BitArray(undef, n, n)
+    randomize!(g)
+    ref = similar(g)
+    step!(ref, g, Serial())
+
+    @testset "$S" for S in [ThreadParallel, ProcParallel]
+        s = S()
+        old = generate(interior(g), s)
+        new = similar(old)
+        step!(new, old, s)
+        @test interior(new) == interior(ref)
     end
 end
