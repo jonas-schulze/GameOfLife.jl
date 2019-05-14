@@ -12,7 +12,8 @@ function step!(new, old, ::ThreadParallel)
         for r in 2:TILESIZE:m-1
             rows = r:min(r+TILESIZE-1, m-1)
             cols = c:min(c+TILESIZE-1, n-1)
-            life_rule!(new, old, (rows, cols))
+            I = (rows,cols)
+            life_rule!(new, old, I, I)
         end
     end
 end

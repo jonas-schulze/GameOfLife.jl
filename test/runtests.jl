@@ -34,7 +34,8 @@ world1 = [1 0 1 0 1 0 1;
                  1 0 0 0 0 1 0 1 0;
                  1 0 0 0 0 1 1 1 0]
     g1 = similar(g0)
-    life_rule!(g1, g0, (2:m+1,2:n+1))
+    I = (2:m+1,2:n+1)
+    life_rule!(g1, g0, I, I)
     @test interior(g1) == world1
 end
 
