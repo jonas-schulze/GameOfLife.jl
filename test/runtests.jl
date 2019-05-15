@@ -1,5 +1,6 @@
 using Test, GameOfLife
 using SharedArrays
+using DistributedArrays: distribute
 
 interior(grid) = @view grid[2:end-1,2:end-1]
 
@@ -15,6 +16,11 @@ function generate(world, ::ProcParallel)
     grid = SharedArray{Bool,2}(m+2, n+2)
     interior(grid) .= world
     grid
+end
+
+function generate(world, ::DistributedTasks)
+    grid = generate(world, Serial())
+    distribute(grid)
 end
 
 world0 = [0 0 0 0 1 1 1;
@@ -39,7 +45,7 @@ world1 = [1 0 1 0 1 0 1;
     @test interior(g1) == world1
 end
 
-const Strategies = [Serial, ThreadParallel, ProcParallel, LocalTasks]
+const Strategies = [Serial, ThreadParallel, ProcParallel, LocalTasks, DistributedTasks]
 
 @testset "distribution strategies" begin
     @testset "$S" for S in Strategies
