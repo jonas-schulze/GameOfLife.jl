@@ -39,8 +39,10 @@ world1 = [1 0 1 0 1 0 1;
     @test interior(g1) == world1
 end
 
+const Strategies = [Serial, ThreadParallel, ProcParallel, LocalTasks]
+
 @testset "distribution strategies" begin
-    @testset "$S" for S in [Serial, ThreadParallel, ProcParallel]
+    @testset "$S" for S in Strategies
         s = S()
         old = generate(world0, s)
         new = similar(old)
@@ -56,18 +58,35 @@ function randomize!(x)
     end
 end
 
+# Props to ffevotte: https://discourse.julialang.org/t/print-debug-info-for-failed-test/22311
+onfail(body, x) = error("I might have overlooked something: $x")
+onfail(body, _::Test.Pass) = nothing
+onfail(body, _::Tuple{Test.Fail,T}) where {T} = body()
+
+gettuples(x) = map(Tuple, x |> interior |> findall)
+
+E_new = Dict()
+
+# If this suite fails, run the script via including the file and plot the grid:
+#
+# using Plots
+# scatter(gettuples(E_ref .!= E_new[S]), markersize=1)
 @testset "slightly bigger dataset" begin
-    n = 1_000
+    n = 2*GameOfLife.TILESIZE + GameOfLife.TILESIZE÷2
     g = BitArray(undef, n, n)
     randomize!(g)
     ref = similar(g)
     step!(ref, g, Serial())
 
-    @testset "$S" for S in [ThreadParallel, ProcParallel]
+    @testset "$S" for S in Strategies[2:end]
         s = S()
         old = generate(interior(g), s)
         new = similar(old)
         step!(new, old, s)
-        @test interior(new) == interior(ref)
+        onfail(@test interior(new) == interior(ref)) do
+            global E_old = g
+            global E_ref = ref
+            global E_new[S] = new
+        end
     end
 end
